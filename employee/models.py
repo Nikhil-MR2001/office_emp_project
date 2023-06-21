@@ -2,6 +2,7 @@ from django.db import models
 from django.contrib.auth.models import User
 from django.utils import timezone
 
+
 # Create your models here.
 
 class Department(models.Model):
@@ -32,3 +33,26 @@ class Employee(models.Model):
 
     def __str__(self):
         return "%s %s %s" % (self.first_name, self.last_name, self.dept)
+
+
+#  merging with a e-commerce website
+
+
+class Shop(models.Model):
+    name = models.CharField(max_length=111)
+    price = models.IntegerField()
+    image = models.ImageField(upload_to='media')
+    description = models.CharField(max_length=500, default='No description available')
+
+    def __str__(self):
+        return self.name
+
+
+class CartItem(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    item = models.ForeignKey(Shop, on_delete=models.CASCADE)
+    quantity = models.PositiveIntegerField(default=1)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.user.username} - {self.item.item}"

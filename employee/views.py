@@ -1,10 +1,14 @@
+import stripe
+from django.conf import settings
 from django.contrib import messages, auth
 from django.contrib.auth import authenticate, login
 from django.contrib.auth.models import User
+from django.http import JsonResponse
 from django.shortcuts import render, HttpResponse, redirect
+from django.views.decorators.csrf import csrf_exempt
 
 from .forms import EmployeeForm
-from .models import Employee, Role, Department
+from .models import Employee, Role, Department, Shop, CartItem
 from datetime import datetime
 from django.db.models import Q
 
@@ -35,6 +39,7 @@ def remove_emp(request, id=0):
     emps = Employee.objects.all()
 
     return render(request, 'remove_emp.html', {'emps': emps})
+
 
 def filter_emp(request):
     if request.method == 'POST':
@@ -146,3 +151,89 @@ def update_emp(request, id=0):
         emp = Employee.objects.get(id=id)
         form = EmployeeForm(instance=emp)
         return render(request, 'update.html', {'form': form})
+
+
+def shop(request):
+    obj = Shop.objects.all()
+
+    return render(request, 'shop.html', {'obj': obj})
+
+
+def shopdetail(request, id):
+    obj = Shop.objects.get(id=id)
+    return render(request, 'shopdetail.html', {'obj': obj})
+
+
+def cart(request):
+    cart_items = CartItem.objects.filter(user=request.user)
+    for cart_item in cart_items:
+        cart_item.subtotal = cart_item.item.price * cart_item.quantity
+    total_price = sum(cart_item.subtotal for cart_item in cart_items)
+    return render(request, 'cart.html', {'cart_items': cart_items, 'total_price': total_price})
+
+
+def add_to_cart(request, id):
+    item = Shop.objects.get(id=id)
+    cart_item, created = CartItem.objects.get_or_create(user=request.user, item=item)
+    if not created:
+        cart_item.quantity += 1
+        cart_item.save()
+    return redirect('cart')
+
+
+def remove_from_cart(request, id):
+    cart_item = CartItem.objects.get(id=id)
+    cart_item.delete()
+    return redirect('cart')
+
+
+# CHECKOUT
+stripe.api_key = settings.STRIPE_SECRET_KEY
+
+def checkout_view(request):
+    cart_item = CartItem.objects.filter(user=request.user).first()
+    cart_item_name = cart_item.item if cart_item else None
+
+    context = {
+        'cart_item_name': cart_item_name,
+        'stripe_publishable_key': settings.STRIPE_PUBLISHABLE_KEY
+    }
+    return render(request, 'checkoutview.html', context)
+
+@csrf_exempt
+def create_checkout_session(request):
+    try:
+        currency = request.POST.get('currency', 'USD')
+        shipping_address_country = request.POST.get('shipping_address_country')
+
+        if currency != 'INR':
+            if shipping_address_country == 'IN':
+                return JsonResponse({'error': 'Non-INR transactions require a shipping address outside India. Please provide a shipping address outside India.'})
+            else:
+                cart_item = CartItem.objects.filter(user=request.user).first()
+                cart_item_name = cart_item.item if cart_item else None
+
+                session = stripe.checkout.Session.create(
+                    payment_method_types=['card'],
+                    line_items=[
+                        {
+                            'price_data': {
+                                'currency': currency,
+                                'unit_amount': cart_item.item.price * 100,  # Amount in cents
+                                'product_data': {
+                                    'name': cart_item.item.name,
+                                },
+                            },
+                            'quantity': 1,
+                        },
+                    ],
+                    mode='payment',
+                    success_url=request.build_absolute_uri('/success'),
+                    cancel_url=request.build_absolute_uri('/cancel'),
+                )
+                return JsonResponse({'sessionId': session.id})
+        else:
+            return JsonResponse({'error': 'INR transactions are not supported for checkout.'})
+
+    except Exception as e:
+        return JsonResponse({'error': str(e)})

@@ -1,0 +1,71 @@
+{% load static %}
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Buy cool new product</title>
+  <link rel="stylesheet" href="{% static 'style.css' %}">
+  <script src="https://js.stripe.com/v3/"></script>
+</head>
+<body>
+<section>
+  {% if cart_item_name %}
+  <div class="product">
+    <img src="{{ cart_item_name.item.image.url }}" alt="Product Image" />
+    <div class="description">
+      <h3>{{ cart_item_name.item.name }}</h3>
+      <h5>${{ cart_item_name.item.price }}</h5>
+    </div>
+  </div>
+  {% else %}
+  <div class="product">
+    <h3>No Product</h3>
+  </div>
+  {% endif %}
+  <form id="checkout-form" action="{% url 'create_checkout_session' %}" method="POST">
+    {% csrf_token %}
+    <label for="currency">Currency:</label>
+    <input type="text" id="currency" name="currency" value="USD">
+    <label for="shipping_address_country">Shipping Address Country:</label>
+    <input type="text" id="shipping_address_country" name="shipping_address_country" value="US">
+    <button type="submit" id="checkout-button">Checkout</button>
+  </form>
+</section>
+
+<script>
+  const stripePublishableKey = '{{ stripe_publishable_key }}';
+  const stripe = Stripe(stripePublishableKey);
+
+  const form = document.getElementById('checkout-form');
+  form.addEventListener('submit', function(event) {
+    event.preventDefault();
+    document.getElementById('checkout-button').disabled = true;
+
+    fetch(form.action, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRFToken': '{{ csrf_token }}',
+      },
+      body: JSON.stringify({
+        currency: document.getElementById('currency').value,
+        shipping_address_country: document.getElementById('shipping_address_country').value
+      })
+    })
+    .then(function(response) {
+      return response.json();
+    })
+    .then(function(session) {
+      if (session.error) {
+        console.error(session.error);
+        document.getElementById('checkout-button').disabled = false;
+      } else {
+        return stripe.redirectToCheckout({ sessionId: session.sessionId });
+      }
+    })
+    .catch(function(error) {
+      console.error('Error:', error);
+    });
+  });
+</script>
+</body>
+</html>

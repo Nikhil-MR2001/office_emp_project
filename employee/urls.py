@@ -12,7 +12,22 @@ urlpatterns = [
     path('update/<int:id>', views.update_emp, name='update_emp'),
 
     path('msg', views.msg, name='msg'),
+    path('shop', views.shop, name='shop'),
 
     path('login', views.login, name='login'),
     path('register/', views.register, name='register'),
+
+
+    # E-commerce
+    path('shop', views.shop, name='shop'),
+    # path('shoplogin', views.shoplogin, name='shoplogin'),
+    path('shopdetail/<int:id>', views.shopdetail, name='shopdetail'),
+
+
+    path('cart', views.cart, name='cart'),
+    path('add_to_cart/<int:id>', views.add_to_cart, name='add_to_cart'),
+    path('remove_from_cart/<int:id>', views.remove_from_cart, name='remove_from_cart'),
+
+    path('checkoutview', views.checkout_view, name='checkoutview'),
+    path('create-checkout-session', views.create_checkout_session, name='create_checkout_session'),
 ]

@@ -11,7 +11,7 @@
              background-size: cover;
              -webkit-backdrop-filter: blur(5px);
              backdrop-filter: blur(5px);
-             height: 850px;
+             height: 950px;
              display: flex;
              align-items: center;
               color:white;">
@@ -23,7 +23,7 @@
   <button class="btn btn-primary dropdown-toggle" type="button" id="dropdownMenuButton1" data-bs-toggle="dropdown" aria-expanded="false"  style=" margin-top:30px; background-color:transparent;">
     Choose Employee To Be Removed
   </button>
-<ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1" style="background-color:#99ffff ;">
+<ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1" style="background-color:#c3ccff;">
       {% for emp in emps %}
     <li><a class="dropdown-item" href="/remove_emp/{{emp.id}}">{{emp.first_name}} {{emp.last_name}}</a></li>
       {% endfor %}

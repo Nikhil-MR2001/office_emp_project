@@ -1,0 +1,99 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>detail</title>
+        <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css">
+
+    <style>
+        body {
+            background-color: #B9EEC9;
+            background-repeat: no-repeat;
+            -webkit-backdrop-filter: blur(5px);
+            backdrop-filter: blur(5px);
+            background-size: cover;
+            height: 850px;
+            color: white;
+            font-family: Arial, sans-serif;
+        }
+
+        .card {
+            width: 22rem;
+            margin: 50px auto;
+            background-color: rgba(255, 255, 255, 0.7);
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+        }
+
+        .card-img-top {
+            height: 300px;
+            width: 100%;
+            object-fit: cover;
+            border-radius: 10px;
+            margin-bottom: 16px;
+        }
+
+        .card-body {
+            text-align: center;
+        }
+
+        .card-title {
+            font-size: 24px;
+            margin-bottom: 8px;
+        }
+
+        .card-subtitle {
+            color: #777;
+            font-size: 18px;
+            margin-bottom: 8px;
+        }
+
+        .card-text {
+            color: #333;
+            margin-bottom: 16px;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 10px 20px;
+            background-color: blue;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+        }
+
+        .btn:hover {
+            background-color: #185ADB;
+        }
+    </style>
+</head>
+<body>
+<nav class="navbar navbar-light bg-light">
+  <form class="form-inline" style="margin-left: 50px;">
+    <input class="form-control mr-sm-2" type="search" placeholder="Search" aria-label="Search" style="width: 400px;">
+    <button class="btn btn-outline-success my-2 my-sm-0" type="submit">Search</button>
+    <a href="{% url 'cart' %}" class="btn btn-outline-success my-2 my-sm-0" style="margin-left: 730px; padding-left: 50px; padding-right: 50px;">Cart</a>
+      <span></span>
+  </form>
+</nav>
+<div class="card">
+    <img class="card-img-top" src="{{ obj.image.url }}" alt="Card image cap">
+    <div class="card-body">
+        <h3 class="card-title">{{ obj.name }}</h3>
+        <h5 class="card-subtitle">{{ obj.price }}</h5>
+        <p class="card-text">{{ obj.description }}</p>
+        <a href="{% url 'add_to_cart' obj.id %}" class="btn btn-primary">Add to Cart</a>    </div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/js/bootstrap.min.js"></script>
+</body>
+</html>
